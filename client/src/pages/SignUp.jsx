@@ -1,4 +1,7 @@
+// src/pages/SignUp.js
+
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -13,7 +16,8 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 
 function Copyright(props) {
   return (
@@ -32,6 +36,8 @@ const defaultTheme = createTheme();
 
 export default function SignUp() {
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+  const { setUserRole } = useContext(AuthContext);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -44,8 +50,26 @@ export default function SignUp() {
     };
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/register`, userData);
-      setMessage(response.data.message);
+      const registerResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/register`, userData);
+      setMessage(registerResponse.data.message);
+
+      // Automatically log in the user after registration
+      const loginData = {
+        email: userData.email,
+        password: userData.password,
+      };
+
+      const loginResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/login`, loginData);
+
+      // Store the token and role in localStorage
+      localStorage.setItem('token', loginResponse.data.token);
+      localStorage.setItem('role', loginResponse.data.role);
+
+      // Set the user role in context
+      setUserRole(loginResponse.data.role);
+
+      // Navigate to the home page
+      navigate('/');
     } catch (error) {
       console.error('Error during signup:', error.response || error.message);
       setMessage(error.response?.data?.error || 'Something went wrong');
@@ -136,7 +160,7 @@ export default function SignUp() {
             )}
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="/signin" variant="body2">
                   Already have an account? Sign in
                 </Link>
               </Grid>

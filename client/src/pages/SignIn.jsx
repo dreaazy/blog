@@ -14,7 +14,8 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 
 function Copyright(props) {
   return (
@@ -34,6 +35,7 @@ const defaultTheme = createTheme();
 export default function SignIn() {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const { setUserRole } = useContext(AuthContext);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -47,10 +49,15 @@ export default function SignIn() {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/login`, userData);
       setMessage(response.data.message);
 
-      /* TOKEN */
+      // Store the token and role in localStorage
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('role', response.data.role);
 
-      navigate('/'); 
+      // Set the user role in context
+      setUserRole(response.data.role);
+
+      // Navigate to the home page
+      navigate('/');
     } catch (error) {
       console.error('Error during signin:', error.response || error.message);
       setMessage(error.response?.data?.error || 'Something went wrong');
@@ -120,7 +127,7 @@ export default function SignIn() {
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="/signup" variant="body2">
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>

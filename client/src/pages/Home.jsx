@@ -1,7 +1,10 @@
 import React from 'react'
+import {Link} from "react-router-dom";
 
 export default function Home() {
   return (
-    <div className='text-3xl'>Home</div>
+    <div className='text-3xl'>
+      
+    </div>
   )
 }

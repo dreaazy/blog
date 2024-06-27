@@ -5,7 +5,7 @@ const User = require('../models/User');
 // Register User
 exports.registerUser = async (req, res) => {
   try {
-    const { name, surname, email, password } = req.body;
+    const { name, surname, email, password, role } = req.body;
 
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
@@ -21,7 +21,8 @@ exports.registerUser = async (req, res) => {
       name,
       surname,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role
     });
 
     // Save the user to the database
@@ -51,11 +52,11 @@ exports.loginUser = async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '1h'
     });
 
-    res.json({ message: 'Login successful', token });
+    res.json({ message: 'Login successful', token, role: user.role }); // Include role in the response
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
